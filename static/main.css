@@ -2,10 +2,17 @@
 main {
     font-family: 'IBM Plex Sans', sans-serif;
     line-height: 1.25;
+    /* Phase 4 */
+    padding: 0 1rem;
+    margin-bottom: 1rem;
 }
 
 header {
     font-size: 1.25rem;
+    /* Phase 4 */
+    background-color: #ddd;
+    box-shadow: 0 0 5px #ddd;
+    padding: 0.5rem 1rem;
 }
 
 header h1 {
@@ -23,6 +30,7 @@ table {
 }
 
 header nav a {
+    /* Also Phase 4 */
     color: #444;
     font-weight: normal;
     text-decoration: none;
@@ -30,6 +38,9 @@ header nav a {
 
 h2 {
     font-size: 1.5rem;
+    /* Phase 4 */
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 0.5rem;
 }
 
 h3 {
@@ -71,4 +82,29 @@ thead th {
 
 .sub-links {
     display: flex;
+}
+
+/* Phase 4 */
+html, body {
+    margin: 0;
+    padding: 0;
+}
+
+header {
+    background-color: #ddd;
+    box-shadow: 0 0 5px #ddd;
+    padding: 0.5rem 1rem;
+}
+
+header h1 {
+    font-weight: bold;
+    color: black;
+}
+
+
+.action-card {
+    border: 1px solid #204a87;
+    background-color: #b1c3de;
+    padding: 1rem;
+    margin-top: 1rem;
 }
