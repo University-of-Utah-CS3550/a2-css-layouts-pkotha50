@@ -1,1 +1,38 @@
-* { color: yellow; }
+/* Phase 2 */
+main {
+    font-family: 'IBM Plex Sans', sans-serif;
+    line-height: 1.25;
+}
+
+header {
+    font-size: 1.25rem;
+}
+
+header h1 {
+    font-weight: bold;
+}
+
+code, pre {
+    font-family: 'IBM Plex Mono', monospace;
+}
+
+table {
+    line-height: 1.5;
+}
+
+header nav a {
+    color: #444;
+    font-weight: normal;
+}
+
+h2 {
+    font-size: 1.5rem;
+}
+
+h3 {
+    font-size: 1rem;
+}
+
+.login {
+    font-size: 1.25rem;
+}
