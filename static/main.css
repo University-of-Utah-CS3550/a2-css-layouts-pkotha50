@@ -18,11 +18,14 @@ code, pre {
 
 table {
     line-height: 1.5;
+    /* Phase 3 */
+    width: 100%;
 }
 
 header nav a {
     color: #444;
     font-weight: normal;
+    text-decoration: none;
 }
 
 h2 {
@@ -35,4 +38,37 @@ h3 {
 
 .login {
     font-size: 1.25rem;
+}
+
+/* Phase 3 */
+header nav a:hover {
+    text-decoration: underline;
+}
+
+.right {
+    text-align: right;
+}
+
+thead th {
+    text-align: left;
+}
+
+.form-row {
+    margin-bottom: 1rem;
+}
+
+.form-row input {
+    width: 50%;
+    text-align: right;
+}
+
+.form-row button {
+    width: 50%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sub-links {
+    display: flex;
 }
