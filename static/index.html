@@ -25,41 +25,13 @@
             </tr>
         </thead>
         <tbody>
+            {% for assignment in assignments %}
             <tr>
-                <td><a href="#">Github username</a></td>
-                <td>Aug 01</td>
-                <td>1</td>
+                <td><a href="/{{ assignment.id }}/">{{ assignment.title }}</a></td>
+                <td>{{ assignment.deadline|date:"Y-m-d" }}</td>
+                <td>{{ assignment.weight }}</td>
             </tr>
-            <tr>
-                <td><a href="submissions.html">Homework 1 (HTML)</a></td>
-                <td>Sep 08</td>
-                <td class="right"> 100</td>
-            </tr>
-            <tr>
-                <td><a href="#">Homework 2 (CSS)</a></td>
-                <td>Sep 22</td>
-                <td class="right">100</td>
-            </tr>
-            <tr>
-                <td><a href="#">Homework 3 (Backend)</a></td>
-                <td>Oct 27</td>
-                <td class="right">100</td>
-            </tr>
-            <tr>
-                <td><a href="#">Homework 4 (Deploy)</a></td>
-                <td>Nov 10</td>
-                <td class="right">100</td>
-            </tr>
-            <tr>
-                <td><a href="#">Homework 5 (Permissions)</a></td>
-                <td>Nov 24</td>
-                <td class="right">100</td>
-            </tr>
-            <tr>
-                <td><a href="#">Homework 6 (JS)</a></td>
-                <td>Dec 08</td>
-                <td class="right"> 100</td>
-            </tr>
+            {% endfor %}
         </tbody>
     </table>
 </main>

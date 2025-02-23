@@ -1,8 +1,10 @@
+from . import models
 from django.shortcuts import render
 
 # Create your views here.
 def index(request):
-    return render(request, "index.html")
+    assignments = models.Assignment.objects.all()
+    return render(request, "index.html", {'assignments': assignments})
 
 def assignment(request, assignment_id):
     return render(request, "assignment.html")
