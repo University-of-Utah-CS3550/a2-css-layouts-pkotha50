@@ -6,32 +6,27 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
 
 <header>
-    <h1>CS 3550</h1>
+    <h1>{{ assignment.title }} - CS 3550</h1>
     <nav>
-        <a href="index.html">Assignments</a>
-        <a href="profile.html">Profile</a>
+        <a href="/">Assignments</a>
+        <a href="/profile/">Profile</a>
     </nav>
 </header>
 
 <main>
     <header>
-        <h2>Homework 1 (HTML)</h2>
-        <p>Due September 08, total of 100 points</p>
+        <h2>{{ assignment.title }}</h2>
+        <p>Due {{ assignment.deadline|date:"Y-m-d" }}, total of {{ assignment.points }} point{{ assignment.points|pluralize }}</p>
     </header>
 
     <section>
-        <p>Currently 2/3 submissions assigned</p>
-        <p>1 submission assigned to you <a href="submissions.html">Grade</a></p>
+        <p>Currently {{ total_submissions }}/{{ total_students }} submission{{ total_submissions|pluralize }}</p>
+        <p>{{ user_submissions }} submission{{ user_submissions|pluralize }} assigned to you <a href="/{{ assignment.id }}/submissions">Grade</a></p>
     </section>
 
     <section class="action-card">
         <h3>Description</h3>
-        <p>In the assignment you will set up a web sever serving HTML web pages for the grading application:</p>
-        <ul>
-            <li>Configure and start a <em>basic web server</em> using Django</li>
-            <li>Create <em>basic web pages</em> using HTML for data/content</li>
-        </ul>
-        <p>For example, here is a page <strong>you will make,</strong> in a file called <code>assignments.html:</code></p>
+        <p>{{ assignment.description|safe }}</p>
         <img src="/static/assignments.png" alt="image of a page you will make containing all assignments">
     </section>
 </main>
