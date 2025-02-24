@@ -5,18 +5,12 @@
 <link rel="stylesheet" href="/static/main.css">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;700&family=IBM+Plex+Mono:wght@400;700&display=swap" rel="stylesheet">
 
-<header>
-    <h1>CS 3550</h1>
-    <nav>
-        <a href="index.html">Assignments</a>
-        <a href="profile.html">Profile</a>
-    </nav>
-</header>
+{% include "header.html" with title=assignment.title %}
 
 <main>
     <header>
-        <h2>Homework 1(HTML)</h2>
-        <p>All grades out of 100</p>
+        <h2>{{ assignment.title }}</h2>
+        <p>All grades out of {{ assignment.points }}</p>
     </header>
 
     <form>
@@ -27,27 +21,18 @@
                 <th>Grade</th>
             </thead>
             <tbody>
+                {% for submission in submissions %}
                 <tr>
-                    <td>s1</td>
-                    <td><a href="#">Submission</a></td>
-                    <td>
-                        <label for="grade1">s1</label>
-                        <input type="number" id="grade1" autofocus tabindex="1">
-                    </td>
+                    <td>{{ submission.author.get_full_name }}</td>
+                    <td><a href="{{ submission.file.url }}">View Submission</a></td>
+                    <td><input type="number" name="grade-{{ submission.id }}" value="{{ submission.score }}" /></td>
                 </tr>
-                <tr>
-                    <td>s2</td>
-                    <td><a href="#">Submission</a></td>
-                    <td>
-                        <label for="grade2">s2</label>
-                        <input type="number" id="grade2" tabindex="2">
-                    </td>
-                </tr>
+                {% endfor %}
             </tbody>
         </table>
     </form>
     <section class="sub-links">
         <button tabindex="3">Submit</button>
-        <a href="profile.html">Back to assignment</a>
+        <a href="/{{ assignment.id }}/">Back to assignment</a>
     </section>
 </main>

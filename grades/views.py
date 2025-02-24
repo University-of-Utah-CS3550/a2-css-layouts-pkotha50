@@ -28,10 +28,30 @@ def assignment(request, assignment_id):
     return render(request, "assignment.html", pass_data)
 
 def submissions(request, assignment_id):
-    return render(request, "submissions.html")
+    assignment = get_object_or_404(Assignment, id=assignment_id)
+    submissions_qs = Submission.objects.filter(assignment=assignment, grader__username='g').order_by('author__username')
+    context = {
+        "assignment": assignment,
+        "submissions": submissions_qs,
+    }
+    return render(request, "submissions.html", context)
 
 def profile(request):
-    return render(request, "profile.html")
+    grader = User.objects.get(username='g')
+    assignments = Assignment.objects.all()
+    profile_data = []
+
+    for assignment in assignments:
+        total_assigned = grader.graded_set.filter(assignment=assignment).count()
+        graded_count = grader.graded_set.filter(assignment=assignment, score__isnull=False).count()
+        profile_data.append({
+            "assignment": assignment,
+            "total_assigned": total_assigned,
+            "graded_count": graded_count,
+        })
+
+    context = {"profile_data": profile_data}
+    return render(request, "profile.html", context)
 
 def login_form(request):
     return render(request, "login.html")
