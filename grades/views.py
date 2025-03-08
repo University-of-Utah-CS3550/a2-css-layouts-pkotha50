@@ -2,6 +2,7 @@ from . import models
 from django.contrib.auth.models import User, Group
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.shortcuts import redirect
 from .models import Assignment
 from .models import Submission
 
@@ -28,6 +29,8 @@ def assignment(request, assignment_id):
     return render(request, "assignment.html", pass_data)
 
 def submissions(request, assignment_id):
+    if request.method == "POST":
+        return redirect(f"/{assignment_id}/submissions/")
     assignment = get_object_or_404(Assignment, id=assignment_id)
     submissions_qs = Submission.objects.filter(assignment=assignment, grader__username='g').order_by('author__username')
     context = {
