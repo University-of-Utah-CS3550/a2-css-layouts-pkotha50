@@ -3,6 +3,7 @@ from django.contrib.auth.models import User, Group
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
 from django.shortcuts import redirect
+from decimal import Decimal
 from .models import Assignment
 from .models import Submission
 
@@ -29,10 +30,24 @@ def assignment(request, assignment_id):
     return render(request, "assignment.html", pass_data)
 
 def submissions(request, assignment_id):
-    if request.method == "POST":
-        return redirect(f"/{assignment_id}/submissions/")
     assignment = get_object_or_404(Assignment, id=assignment_id)
+    
+    if request.method == "POST":
+        submissions_to_update = []
+
+        for key, value in request.POST.items():
+            if key.startswith('grade-'):
+                submission_id = int(key.removeprefix('grade-'))
+                submission = Submission.objects.get(id=submission_id, assignment=assignment)
+
+                submission.score = None if value.strip() == '' else Decimal(value)
+                submissions_to_update.append(submission)
+        
+        Submission.objects.bulk_update(submissions_to_update, ['score'])
+        return redirect(f"/{assignment_id}/submissions")
+
     submissions_qs = Submission.objects.filter(assignment=assignment, grader__username='g').order_by('author__username')
+
     context = {
         "assignment": assignment,
         "submissions": submissions_qs,
