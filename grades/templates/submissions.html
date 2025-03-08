@@ -15,18 +15,36 @@
 
     <form action="/{{ assignment.id }}/submissions" method="post">
         {% csrf_token %}
+
+        {% if errors.invalid_submission %}
+            {% for error in errors.invalid_submission %}
+                <output class="error">{{ error }}</output><br>
+            {% endfor %}
+        {% endif %}
+
         <table>
             <thead>
                 <th>Student</th>
                 <th>Submission</th>
                 <th>Grade</th>
+                <th>Errors</th>
             </thead>
             <tbody>
                 {% for submission in submissions %}
                 <tr>
                     <td>{{ submission.author.get_full_name }}</td>
                     <td><a href="{{ submission.file.url }}">View Submission</a></td>
-                    <td><input type="number" name="grade-{{ submission.id }}" value="{{ submission.score }}" /></td>
+                    <td><input type="number" name="grade-{{ submission.id }}" value="{{ submission.score }}" min="0" step="0.01"
+                        max="{{ assignment.points }}" 
+                        {% if submission.id in errors %} class="invalid" {% endif %}/>
+                    </td>
+                    <td>
+                        {% if errors.get(submission.id) %}
+                            {% for error in errors[submission.id] %}
+                                <output class="error">{{ error }}</output><br>
+                            {% endfor %}
+                        {% endif %}
+                    </td>
                 </tr>
                 {% endfor %}
             </tbody>

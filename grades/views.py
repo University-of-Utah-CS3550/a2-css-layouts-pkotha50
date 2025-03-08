@@ -31,26 +31,43 @@ def assignment(request, assignment_id):
 
 def submissions(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
+    submissions_qs = Submission.objects.filter(assignment=assignment, grader__username='g').order_by('author__username')
     
+    errors = {}
+    submissions_to_update = []
+
     if request.method == "POST":
-        submissions_to_update = []
+        max_points = assignment.points
 
         for key, value in request.POST.items():
             if key.startswith('grade-'):
-                submission_id = int(key.removeprefix('grade-'))
-                submission = Submission.objects.get(id=submission_id, assignment=assignment)
+                try:
+                    submission_id = int(key.removeprefix('grade-'))
+                    submission = Submission.objects.get(id=submission_id, assignment=assignment)
 
-                submission.score = None if value.strip() == '' else Decimal(value)
-                submissions_to_update.append(submission)
-        
-        Submission.objects.bulk_update(submissions_to_update, ['score'])
-        return redirect(f"/{assignment_id}/submissions")
+                    if value.strip() == '':
+                        submission.score = None
+                    else:
+                        score = Decimal(value)
+                        if score < 0 or score > max_points:
+                            raise ValueError("Score must be between 0 and maximum points.")
+                        submission.score = score
+                    
+                    submissions_to_update.append(submission)
 
-    submissions_qs = Submission.objects.filter(assignment=assignment, grader__username='g').order_by('author__username')
+                except (ValueError, InvalidOperation):
+                    errors.setdefault(submission_id, []).append("Invalid score.")
+
+                except Submission.DoesNotExist:
+                    errors.setdefault('invalid_submission', []).append("Invalid submission ID.")
+
+        if submissions_to_update:
+            Submission.objects.bulk_update(submissions_to_update, ['score'])
 
     context = {
         "assignment": assignment,
         "submissions": submissions_qs,
+        "errors": errors
     }
     return render(request, "submissions.html", context)
 
