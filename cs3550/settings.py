@@ -27,6 +27,9 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+MEDIA_ROOT = "uploads/"
+MEDIA_URL = "uploads/"
+
 
 # Application definition
 

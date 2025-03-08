@@ -16,7 +16,7 @@
     <section class="action-card">
         <h3>Your Submission</h3>
         {% if alice_submission %}
-            <p>Current submission: {{ alice_submission.file.name }}</p>
+            <p>Current submission: <a href="{{ alice_submission.file.url }}" target="_blank">{{ alice_submission.file.name }}</a></p>
         {% else %}
             <p>No current submission</p>
         {% endif %}

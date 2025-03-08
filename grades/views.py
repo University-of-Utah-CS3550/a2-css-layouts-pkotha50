@@ -11,23 +11,43 @@ from .models import Submission
 def index(request):
     assignments = models.Assignment.objects.all()
     return render(request, "index.html", {'assignments': assignments})
-
+    
 def assignment(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
+    grader = User.objects.get(username='g')
+    alice = User.objects.get(username='a')
+
+    alice_submission = Submission.objects.filter(assignment=assignment, author=alice).first()
+
+    if request.method == "POST" and 'submission_file' in request.FILES:
+        submission_file = request.FILES['submission_file']
+
+        if alice_submission:
+            alice_submission.file = submission_file
+        else:
+            alice_submission = Submission.objects.create(
+                assignment=assignment,
+                author=alice,
+                file=submission_file,
+                grader=grader,
+                score=None
+            )
+
+        alice_submission.save()
+        return redirect(f"/{assignment_id}/")
 
     total_submissions = assignment.submission_set.count()
-    grader = User.objects.get(username='g')
     user_submissions = grader.graded_set.filter(assignment=assignment).count()
+    total_students = User.objects.filter(groups__name="Students").count()
 
-    total_students = models.Group.objects.get(name="Students").user_set.count()
-
-    pass_data = {
+    context = {
         "assignment": assignment,
         "total_submissions": total_submissions,
         "user_submissions": user_submissions,
         "total_students": total_students,
+        "alice_submission": alice_submission,
     }
-    return render(request, "assignment.html", pass_data)
+    return render(request, "assignment.html", context)
 
 def submissions(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
@@ -90,3 +110,7 @@ def profile(request):
 
 def login_form(request):
     return render(request, "login.html")
+
+def show_upload(request, filename):
+    submission = get_object_or_404(models.Submission, file__name=filename)
+    return HttpResponse(submission.file.open())
