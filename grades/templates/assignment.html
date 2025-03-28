@@ -15,27 +15,33 @@
 
     {% if is_student %}
     <section class="action-card">
-            <h3>Your Submission</h3>
-            {% if alice_submission %}
-                <p>Current submission: <a href="{{ alice_submission.file.url }}" target="_blank">{{ alice_submission.file.name }}</a></p>
-            {% else %}
-                <p>No current submission</p>
-            {% endif %}
+        <h3>Your Submission</h3>
 
-            {% if user.is_authenticated %}
-            <form action="/{{ assignment.id }}/" method="post" enctype="multipart/form-data">
-                {% csrf_token %}
-                <input type="file" name="submission_file" required>
-                <button type="submit">Submit</button>
-            </form>
+        {% if alice_submission %}
+            {% if alice_submission.score is not None %}
+                <p>Your submission, {{ alice_submission.file.name }}, received {{ alice_submission.score }}/{{ assignment.points }} points ({{ percentage_score }}%).</p>
+            {% elif assignment.deadline < now %}
+                <p>Your submission, {{ alice_submission.file.name }}, is being graded.</p>
+            {% else %}
+                <p>Your current submission is {{ alice_submission.file.name }}.</p>
             {% endif %}
+        {% else %}
+            {% if assignment.deadline < now %}
+                <p>You did not submit this assignment and received 0 points.</p>
+            {% else %}
+                <p>No current submission.</p>
+            {% endif %}
+        {% endif %}
+
+        {% if assignment.deadline >= now and user.is_authenticated %}
+        <form action="/{{ assignment.id }}/" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <input type="file" name="submission_file" required>
+            <button type="submit">Submit</button>
+        </form>
+        {% endif %}
     </section>
-    {% else %}
-    <section class="action-card">
-            <p>Currently {{ total_submissions }}/{{ total_students }} submission{{ total_submissions|pluralize }}</p>
-            <p>{{ user_submissions }} submission{{ user_submissions|pluralize }} assigned to you <a href="/{{ assignment.id }}/submissions">Grade</a></p>
-    </section>
-    {% endif %}
+{% endif %}
 
     <section class="action-card">
         <h4>Description</h4>

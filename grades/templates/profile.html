@@ -16,6 +16,7 @@
         </p>
     </section>
 
+    {% if is_ta_or_admin %}
     <table>
         <thead>
             <tr>
@@ -32,4 +33,27 @@
             {% endfor %}
         </tbody>
     </table>
+{% elif is_student %}
+    <table>
+        <thead>
+            <tr>
+                <th>Assignment</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for data in student_data %}
+            <tr>
+                <td><a href="/{{ data.assignment.id }}/">{{ data.assignment.title }}</a></td>
+                <td>{{ data.status }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr>
+                <td colspan="2"><strong>Current grade: {{ current_grade }}%</strong></td>
+            </tr>
+        </tfoot>
+    </table>
+{% endif %}
 </main>
