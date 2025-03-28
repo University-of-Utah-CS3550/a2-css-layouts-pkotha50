@@ -15,45 +15,68 @@ def index(request):
     
 def assignment(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
-    grader = User.objects.get(username='g')
-    alice = User.objects.get(username='a')
+    user = request.user
 
-    alice_submission = Submission.objects.filter(assignment=assignment, author=alice).first()
+    is_student = user.groups.filter(name="Students").exists() or not user.is_authenticated
+    is_ta = user.groups.filter(name="TAs").exists()
+    is_admin = user.is_superuser
 
-    if request.method == "POST" and 'submission_file' in request.FILES:
-        submission_file = request.FILES['submission_file']
+    alice_submission = None
+    if is_student and user.is_authenticated:
+        alice_submission = Submission.objects.filter(assignment=assignment, author=user).first()
 
-        if alice_submission:
-            alice_submission.file = submission_file
-        else:
-            alice_submission = Submission.objects.create(
-                assignment=assignment,
-                author=alice,
-                file=submission_file,
-                grader=grader,
-                score=None
-            )
+        if request.method == "POST" and 'submission_file' in request.FILES:
+            submission_file = request.FILES['submission_file']
 
-        alice_submission.save()
-        return redirect(f"/{assignment_id}/")
+            if alice_submission:
+                alice_submission.file = submission_file
+            else:
+                alice_submission = Submission.objects.create(
+                    assignment=assignment,
+                    author=user,
+                    file=submission_file,
+                    grader=None,
+                    score=None
+                )
+
+            alice_submission.save()
+            return redirect(f"/{assignment_id}/")
 
     total_submissions = assignment.submission_set.count()
-    user_submissions = grader.graded_set.filter(assignment=assignment).count()
     total_students = User.objects.filter(groups__name="Students").count()
+
+    if is_admin:
+        user_submissions = total_submissions
+    elif is_ta:
+        user_submissions = Submission.objects.filter(assignment=assignment, grader=user).count()
+    else:
+        user_submissions = None
 
     context = {
         "assignment": assignment,
+        "alice_submission": alice_submission,
         "total_submissions": total_submissions,
         "user_submissions": user_submissions,
         "total_students": total_students,
-        "alice_submission": alice_submission,
+        "is_student": is_student,
     }
+
     return render(request, "assignment.html", context)
 
 def submissions(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
-    submissions_qs = Submission.objects.filter(assignment=assignment, grader__username='g').order_by('author__username')
-    
+    user = request.user
+
+    is_admin = user.is_superuser
+    is_ta = user.groups.filter(name="TAs").exists()
+
+    if is_admin:
+        submissions_qs = Submission.objects.filter(assignment=assignment).order_by('author__username')
+    elif is_ta:
+        submissions_qs = Submission.objects.filter(assignment=assignment, grader=user).order_by('author__username')
+    else:
+        return redirect(f"/{assignment_id}/")
+
     errors = {}
     submissions_to_update = []
 
@@ -73,12 +96,11 @@ def submissions(request, assignment_id):
                         if score < 0 or score > max_points:
                             raise ValueError("Score must be between 0 and maximum points.")
                         submission.score = score
-                    
+
                     submissions_to_update.append(submission)
 
                 except (ValueError, InvalidOperation):
                     errors.setdefault(submission_id, []).append("Invalid score.")
-
                 except Submission.DoesNotExist:
                     errors.setdefault('invalid_submission', []).append("Invalid submission ID.")
 
@@ -88,7 +110,7 @@ def submissions(request, assignment_id):
     context = {
         "assignment": assignment,
         "submissions": submissions_qs,
-        "errors": errors
+        "errors": errors,
     }
     return render(request, "submissions.html", context)
 

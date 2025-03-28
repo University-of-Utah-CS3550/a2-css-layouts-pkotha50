@@ -13,25 +13,29 @@
         <p>Due {{ assignment.deadline|date:"Y-m-d" }}, total of {{ assignment.points }} point{{ assignment.points|pluralize }}</p>
     </header>
 
+    {% if is_student %}
     <section class="action-card">
-        <h3>Your Submission</h3>
-        {% if alice_submission %}
-            <p>Current submission: <a href="{{ alice_submission.file.url }}" target="_blank">{{ alice_submission.file.name }}</a></p>
-        {% else %}
-            <p>No current submission</p>
-        {% endif %}
+            <h3>Your Submission</h3>
+            {% if alice_submission %}
+                <p>Current submission: <a href="{{ alice_submission.file.url }}" target="_blank">{{ alice_submission.file.name }}</a></p>
+            {% else %}
+                <p>No current submission</p>
+            {% endif %}
 
-        <form action="/{{ assignment.id }}/" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <input type="file" name="submission_file" required>
-            <button type="submit">Submit</button>
-        </form>
+            {% if user.is_authenticated %}
+            <form action="/{{ assignment.id }}/" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="submission_file" required>
+                <button type="submit">Submit</button>
+            </form>
+            {% endif %}
     </section>
-
-    <section>
-        <p>Currently {{ total_submissions }}/{{ total_students }} submission{{ total_submissions|pluralize }}</p>
-        <p>{{ user_submissions }} submission{{ user_submissions|pluralize }} assigned to you <a href="/{{ assignment.id }}/submissions">Grade</a></p>
+    {% else %}
+    <section class="action-card">
+            <p>Currently {{ total_submissions }}/{{ total_students }} submission{{ total_submissions|pluralize }}</p>
+            <p>{{ user_submissions }} submission{{ user_submissions|pluralize }} assigned to you <a href="/{{ assignment.id }}/submissions">Grade</a></p>
     </section>
+    {% endif %}
 
     <section class="action-card">
         <h4>Description</h4>
