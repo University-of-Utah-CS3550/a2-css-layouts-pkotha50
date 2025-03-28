@@ -21,3 +21,8 @@ class Submission(models.Model):
         if self.grader != user:
             raise PermissionDenied("You cannot grade submissions not assigned to you.")
         self.score = score
+
+    def view_submission(self, user):
+        if user == self.author or user == self.grader or user.is_superuser:
+            return self.file
+        raise PermissionDenied("You do not have permission to view this file.")

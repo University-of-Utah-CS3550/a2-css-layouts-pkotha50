@@ -5,6 +5,7 @@ from . import models
 from django.contrib.auth.models import User, Group
 from django.shortcuts import render
 from django.shortcuts import get_object_or_404
+from django.http import Http404
 from django.shortcuts import redirect
 from django.utils.timezone import now
 from django.http import HttpResponseBadRequest
@@ -42,6 +43,18 @@ def assignment(request, assignment_id):
                 return HttpResponseBadRequest("Assignment deadline has passed.")
 
             submission_file = request.FILES['submission_file']
+            error = None
+
+            if submission_file.size > 64 * 1024 * 1024:
+                error = "File too large. Maximum size is 64 MiB."
+            elif not submission_file.name.lower().endswith(".pdf"):
+                error = "Only .pdf files are allowed."
+            elif not next(submission_file.chunks()).startswith(b"%PDF-"):
+                error = "Uploaded file is not a valid PDF."
+
+            if error:
+                context["error"] = error
+                return render(request, "assignment.html", context)
 
             if alice_submission:
                 alice_submission.file = submission_file
@@ -232,10 +245,21 @@ def login_form(request):
     next_url = request.GET.get("next", "/profile/")
     return render(request, "login.html", {"next": next_url})
 
+def is_pdf(file):
+    return file.name.lower().endswith(".pdf") and next(file.chunks()).startswith(b"%PDF-")
+
 @login_required
 def show_upload(request, filename):
     submission = get_object_or_404(models.Submission, file__name=filename)
-    return HttpResponse(submission.file.open())
+
+    file = submission.view_submission(request.user)
+
+    if not is_pdf(file):
+        raise Http404("File is not a valid PDF")
+
+    response = HttpResponse(file.open(), content_type="application/pdf")
+    response["Content-Disposition"] = f'attachment; filename="{file.name}"'
+    return response
 
 def pick_grader(assignment):
     tas = Group.objects.get(name="TAs").user_set.annotate(

@@ -34,9 +34,13 @@
         {% endif %}
 
         {% if assignment.deadline >= now and user.is_authenticated %}
+            {% if error %}
+            <output class="error"><strong>{{ error }}</strong></output>
+            {% endif %}
+
         <form action="/{{ assignment.id }}/" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <input type="file" name="submission_file" required>
+            <input type="file" name="submission_file" required accept="application/pdf">
             <button type="submit">Submit</button>
         </form>
         {% endif %}
