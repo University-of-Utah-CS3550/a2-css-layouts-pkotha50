@@ -10,7 +10,10 @@
 <main>
     <h2>Your grades</h2>
     <section class="action-card">
-        <p>Currently logged in as g. <a href="/profile/login/" role="button">Log out</a></p>
+        <p>
+            Currently logged in as {{ user.get_full_name|default:user.username }}.
+            <a href="/profile/login/" role="button">Log out</a>
+        </p>
     </section>
 
     <table>

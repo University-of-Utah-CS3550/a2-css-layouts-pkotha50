@@ -1,3 +1,4 @@
+from django.contrib.auth import authenticate, login, logout
 from . import models
 from django.contrib.auth.models import User, Group
 from django.shortcuts import render
@@ -105,10 +106,25 @@ def profile(request):
             "graded_count": graded_count,
         })
 
-    context = {"profile_data": profile_data}
+    context = {
+        "profile_data": profile_data,
+        "user": request.user
+        }
     return render(request, "profile.html", context)
 
 def login_form(request):
+    if request.method == "POST":
+        username = request.POST.get("username", "")
+        password = request.POST.get("password", "")
+
+        user = authenticate(request, username=username, password=password)
+
+        if user is not None:
+            login(request, user)
+            return redirect("/profile/")
+        else:
+            return render(request, "login.html")
+
     return render(request, "login.html")
 
 def show_upload(request, filename):
