@@ -9,8 +9,14 @@
 
 <main>
     <h2>Log in</h2>
+
+    {% if error %}
+    <output class="error"><strong>{{ error }}</strong></output>
+    {% endif %}
+
     <form class="login" method="post" action="/profile/login/">
         {% csrf_token %}
+        <input type="hidden" name="next" value="{{ next }}">
 
         <div class="form-row">
             <label for="username">Username:</label>

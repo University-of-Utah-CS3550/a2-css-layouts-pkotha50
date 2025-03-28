@@ -1,3 +1,5 @@
+from django.core.exceptions import PermissionDenied
+from django.contrib.auth.decorators import login_required
 from django.contrib.auth import authenticate, login, logout
 from . import models
 from django.contrib.auth.models import User, Group
@@ -7,15 +9,18 @@ from django.shortcuts import redirect
 from django.utils.timezone import now
 from django.http import HttpResponseBadRequest
 from django.db.models import Count
+from django.utils.http import url_has_allowed_host_and_scheme
 from decimal import Decimal
 from .models import Assignment
 from .models import Submission
 
 # Create your views here.
+@login_required
 def index(request):
     assignments = models.Assignment.objects.all()
     return render(request, "index.html", {'assignments': assignments})
-    
+
+@login_required
 def assignment(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
     user = request.user
@@ -75,9 +80,13 @@ def assignment(request, assignment_id):
 
     return render(request, "assignment.html", context)
 
+@login_required
 def submissions(request, assignment_id):
     assignment = get_object_or_404(Assignment, id=assignment_id)
     user = request.user
+
+    if not user.groups.filter(name="TAs").exists():
+        raise PermissionDenied("Only TAs can access this page.")
 
     is_admin = user.is_superuser
     is_ta = user.groups.filter(name="TAs").exists()
@@ -107,7 +116,7 @@ def submissions(request, assignment_id):
                         score = Decimal(value)
                         if score < 0 or score > max_points:
                             raise ValueError("Score must be between 0 and maximum points.")
-                        submission.score = score
+                        submission.change_grade(user, score)
 
                     submissions_to_update.append(submission)
 
@@ -126,6 +135,7 @@ def submissions(request, assignment_id):
     }
     return render(request, "submissions.html", context)
 
+@login_required
 def profile(request):
     user = request.user
     assignments = Assignment.objects.all()
@@ -198,21 +208,31 @@ def profile(request):
     }
     return render(request, "profile.html", context)
 
+
 def login_form(request):
     if request.method == "POST":
         username = request.POST.get("username", "")
         password = request.POST.get("password", "")
+        next_url = request.POST.get("next", "/profile/")
 
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
             login(request, user)
-            return redirect("/profile/")
+            if url_has_allowed_host_and_scheme(next_url, None):
+                return redirect(next_url)
+            else:
+                return redirect("/")
         else:
-            return render(request, "login.html")
+            return render(request, "login.html", {
+                "error": "Username and password do not match",
+                "next": next_url
+            })
 
-    return render(request, "login.html")
+    next_url = request.GET.get("next", "/profile/")
+    return render(request, "login.html", {"next": next_url})
 
+@login_required
 def show_upload(request, filename):
     submission = get_object_or_404(models.Submission, file__name=filename)
     return HttpResponse(submission.file.open())

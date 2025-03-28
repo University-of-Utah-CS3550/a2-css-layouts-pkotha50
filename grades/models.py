@@ -1,4 +1,5 @@
 from django.contrib.auth.models import User, Group
+from django.core.exceptions import PermissionDenied
 from django.db import models
 
 # Create your models here.
@@ -15,3 +16,8 @@ class Submission(models.Model):
     grader = models.ForeignKey(User, related_name='graded_set', null=True, blank=True, on_delete=models.SET_NULL)
     file = models.FileField()
     score = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+
+    def change_grade(self, user, score):
+        if self.grader != user:
+            raise PermissionDenied("You cannot grade submissions not assigned to you.")
+        self.score = score
