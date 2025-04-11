@@ -61,3 +61,37 @@ function make_table_sortable(table) {
 document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("table.sortable").forEach(make_table_sortable);
 });
+
+export function make_form_async(form) {
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const formData = new FormData(form);
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+        const response = await fetch(form.action, {
+            method: "POST",
+            body: formData,
+            headers: {
+                "X-CSRFToken": csrfToken
+            }
+        });
+
+        const output = form.querySelector("output");
+        if (!output) {
+            const newOutput = document.createElement("output");
+            form.appendChild(newOutput);
+        }
+
+        if (!response.ok) {
+            form.querySelector("output").textContent = "Upload failed";
+        } else {
+            form.querySelector("output").textContent = "Upload succeeded";
+        }
+    });
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("form.async-upload").forEach(make_form_async);
+});

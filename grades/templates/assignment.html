@@ -38,7 +38,7 @@
             <output class="error"><strong>{{ error }}</strong></output>
             {% endif %}
 
-        <form action="/{{ assignment.id }}/" method="post" enctype="multipart/form-data">
+        <form class="async-upload" action="/{{ assignment.id }}/" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <input type="file" name="submission_file" required accept="application/pdf">
             <button type="submit">Submit</button>
