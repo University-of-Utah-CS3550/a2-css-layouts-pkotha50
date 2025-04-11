@@ -5,33 +5,56 @@ function say_hi(elt) {
 say_hi(document.querySelector("h1"));
 
 function make_table_sortable(table) {
-    const headerCell = table.querySelector("thead tr th:last-child");
+    const headers = table.querySelectorAll("thead th.sort-column");
 
-    headerCell.addEventListener("click", () => {
-        const className = headerCell.className;
-        let ascending = true;
+    headers.forEach(header => {
+        header.addEventListener("click", (event) => {
+            const allHeaders = table.querySelectorAll("th");
+            allHeaders.forEach(h => {
+                if (h !== header) h.className = h.className.replace("sort-asc", "").replace("sort-desc", "").trim();
+            });
 
-        if (className.includes("sort-asc")) {
-            headerCell.className = className.replace("sort-asc", "sort-desc");
-            ascending = false;
-        } else {
-            headerCell.className = className.replace("sort-desc", "").trim() + " sort-asc";
-        }
+            const currentClass = header.className;
+            if (currentClass.includes("sort-asc")) {
+                header.className = currentClass.replace("sort-asc", "sort-desc");
+            } 
 
-        const tbody = table.querySelector("tbody");
-        const rows = Array.from(tbody.querySelectorAll("tr"));
+            else if (currentClass.includes("sort-desc")) {
+                header.className = currentClass.replace("sort-desc", "").trim();
+            } 
 
-        rows.sort((rowA, rowB) => {
-            const textA = rowA.querySelector("td:last-child").textContent.trim();
-            const textB = rowB.querySelector("td:last-child").textContent.trim();
+            else {
+                header.className += " sort-asc";
+            }
 
-            const numA = parseFloat(textA);
-            const numB = parseFloat(textB);
+            const direction = header.className.includes("sort-asc") ? "asc" :
+                              header.className.includes("sort-desc") ? "desc" : "original";
 
-            return ascending ? numA - numB : numB - numA;
+            const columnIndex = header.cellIndex;
+            const tbody = table.querySelector("tbody");
+            const rows = Array.from(tbody.querySelectorAll("tr"));
+
+            rows.sort((a, b) => {
+                if (direction === "original") {
+                    return parseInt(a.getAttribute("data-index")) - parseInt(b.getAttribute("data-index"));
+                }
+
+                const aText = a.cells[columnIndex].textContent.trim();
+                const bText = b.cells[columnIndex].textContent.trim();
+                const aVal = parseFloat(aText);
+                const bVal = parseFloat(bText);
+
+                if (!isNaN(aVal) && !isNaN(bVal)) {
+                    return direction === "asc" ? aVal - bVal : bVal - aVal;
+                } 
+                
+                else {
+                    return direction === "asc" ? aText.localeCompare(bText) : bText.localeCompare(aText);
+                }
+            });
+
+            rows.forEach(row => tbody.appendChild(row));
         });
-
-        rows.forEach(row => tbody.appendChild(row));
     });
 }
 

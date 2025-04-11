@@ -38,12 +38,12 @@
         <thead>
             <tr>
                 <th>Assignment</th>
-                <th>Status</th>
+                <th class="sort-column">Status</th>
             </tr>
         </thead>
         <tbody>
             {% for data in student_data %}
-            <tr>
+            <tr data-index="{{ forloop.counter }}">
                 <td><a href="/{{ data.assignment.id }}/">{{ data.assignment.title }}</a></td>
                 <td>{{ data.status }}</td>
             </tr>
