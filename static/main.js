@@ -84,14 +84,104 @@ export function make_form_async(form) {
             form.appendChild(newOutput);
         }
 
-        if (!response.ok) {
+        if (!response.ok) 
+            {
             form.querySelector("output").textContent = "Upload failed";
-        } else {
+        } 
+        
+        else {
             form.querySelector("output").textContent = "Upload succeeded";
         }
     });
 }
 
+export function make_grade_hypothesized(table) {
+    const button = document.createElement("button");
+    button.textContent = "Hypothesize";
+    table.parentElement.insertBefore(button, table);
+
+    button.addEventListener("click", () => {
+        const isHypo = table.classList.toggle("hypothesized");
+        button.textContent = isHypo ? "Actual grades" : "Hypothesize";
+
+        const cells = table.querySelectorAll("tbody td:last-child");
+
+        cells.forEach(cell => {
+            const text = cell.textContent.trim();
+
+            if (isHypo) {
+                cell.setAttribute("data-original", text);
+
+                if (text === "Ungraded" || text === "Not Due") {
+                    cell.innerHTML = `<input type="number" min="0" max="100">`;
+                }
+            } 
+            else {
+                const original = cell.getAttribute("data-original");
+                if (original !== null) {
+                    cell.textContent = original;
+                    cell.removeAttribute("data-original");
+                }
+            }
+        });
+
+        updateHypotheticalGrade(table);
+    });
+
+    table.addEventListener("keyup", (event) => {
+        if (table.classList.contains("hypothesized") && event.target.tagName === "INPUT") {
+            updateHypotheticalGrade(table);
+        }
+    });
+}
+
+function updateHypotheticalGrade(table) {
+    let earned = 0;
+    let total = 0;
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    rows.forEach(row => {
+        const cell = row.lastElementChild;
+        const weight = parseFloat(cell.getAttribute("data-weight"));
+
+        const input = cell.querySelector("input");
+        const text = cell.textContent.trim();
+
+        if (input) {
+            const val = parseFloat(input.value);
+            if (!isNaN(val)) {
+                earned += (val / 100) * weight;
+                total += weight;
+            }
+        } 
+        
+        else if (text.includes("received")) {
+            const match = text.match(/([\d.]+)\/([\d.]+)/);
+            if (match) {
+                earned += parseFloat(match[1]);
+                total += parseFloat(match[2]);
+            }
+        } 
+        
+        else if (text.includes("Missing")) {
+            total += weight;
+        }
+    });
+
+    const finalGrade = total === 0 ? 100 : Math.round((earned / total) * 100);
+    const footerCell = table.querySelector("tfoot td strong");
+    if (footerCell) {
+        footerCell.textContent = `Current grade: ${finalGrade}%`;
+    }
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll("table.sortable").forEach(make_table_sortable);
     document.querySelectorAll("form.async-upload").forEach(make_form_async);
+
+    const studentTable = document.querySelector("#student-grades");
+    if (studentTable) {
+        make_grade_hypothesized(studentTable);
+    }
 });

@@ -34,7 +34,7 @@
         </tbody>
     </table>
 {% elif is_student %}
-    <table class="sortable">
+    <table class="sortable" id="student-grades">
         <thead>
             <tr>
                 <th>Assignment</th>
@@ -45,7 +45,7 @@
             {% for data in student_data %}
             <tr data-index="{{ forloop.counter }}">
                 <td><a href="/{{ data.assignment.id }}/">{{ data.assignment.title }}</a></td>
-                <td>{{ data.status }}</td>
+                <td data-weight="{{ data.assignment.points }}">{{ data.status }}</td>
             </tr>
             {% endfor %}
         </tbody>
